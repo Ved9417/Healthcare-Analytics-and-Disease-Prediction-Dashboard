@@ -1,0 +1,13 @@
+Feature,Test,Statistic,p-value,Mean (No Disease),Mean (Disease),Conclusion
+Age,Independent t-test,-30.8271,0.0,46.51,58.62,REJECT H0 (Significant)
+BMI,Independent t-test,-9.4715,0.0,26.97,28.07,REJECT H0 (Significant)
+Blood_Glucose,Independent t-test,-3.9254,8.7e-05,100.08,102.19,REJECT H0 (Significant)
+Systolic_BP,Independent t-test,-2.504,0.012295,119.1,119.97,REJECT H0 (Significant)
+Cholesterol,Independent t-test,-4.2382,2.3e-05,197.42,200.71,REJECT H0 (Significant)
+HbA1c,Independent t-test,-6.3974,0.0,5.65,5.79,REJECT H0 (Significant)
+LDL,Independent t-test,0.2889,0.772641,130.37,130.18,FAIL TO REJECT H0
+Triglycerides,Independent t-test,0.3662,0.714234,150.89,150.47,FAIL TO REJECT H0
+Smoking_Status,Chi-Square,195.0262,0.0,-,-,REJECT H0 (Significant)
+Physical_Activity,Chi-Square,328.3025,0.0,-,-,REJECT H0 (Significant)
+Diet_Quality,Chi-Square,59.6807,0.0,-,-,REJECT H0 (Significant)
+Gender,Chi-Square,0.7776,0.377876,-,-,FAIL TO REJECT H0

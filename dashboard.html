@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthcare Analytics Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f1923; color: #e0e8f0; min-height: 100vh; }
+  
+  header {
+    background: linear-gradient(135deg, #1a2e44, #0d3b5e);
+    padding: 20px 30px;
+    border-bottom: 2px solid #2196F3;
+    display: flex; align-items: center; gap: 15px;
+  }
+  header .logo { font-size: 2rem; }
+  header h1 { font-size: 1.5rem; color: #64b5f6; }
+  header p { font-size: 0.85rem; color: #90a4ae; margin-top: 3px; }
+
+  .kpi-bar {
+    display: flex; gap: 16px; padding: 20px 30px;
+    background: #111d2b; flex-wrap: wrap;
+  }
+  .kpi {
+    flex: 1; min-width: 160px;
+    background: linear-gradient(135deg, #1a2e44, #162236);
+    border: 1px solid #2a3f58; border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+  .kpi .value { font-size: 2rem; font-weight: 700; color: #64b5f6; }
+  .kpi .label { font-size: 0.78rem; color: #90a4ae; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi .delta { font-size: 0.8rem; margin-top: 6px; }
+  .kpi .delta.up   { color: #ef5350; }
+  .kpi .delta.down { color: #66bb6a; }
+
+  main { padding: 20px 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .card {
+    background: #162236; border: 1px solid #2a3f58;
+    border-radius: 12px; padding: 20px;
+  }
+  .card.full { grid-column: 1 / -1; }
+  .card h3 { font-size: 0.9rem; color: #90a4ae; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+
+  /* Bar chart */
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { width: 130px; font-size: 0.78rem; color: #b0bec5; text-align: right; flex-shrink: 0; }
+  .bar-bg { flex: 1; background: #1e3048; border-radius: 4px; height: 20px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; display: flex; align-items: center; padding-right: 6px; justify-content: flex-end; }
+  .bar-fill span { font-size: 0.7rem; font-weight: 700; color: #fff; }
+
+  /* Donut */
+  .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 30px; }
+  svg.donut text { font-family: 'Segoe UI', Arial, sans-serif; }
+  .legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #b0bec5; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Model comparison table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: #1a2e44; padding: 10px 12px; text-align: left; color: #64b5f6; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 10px 12px; border-bottom: 1px solid #1e3048; color: #cfd8dc; }
+  tr:hover td { background: #1a2e44; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+  .badge.green { background: #1b5e20; color: #81c784; }
+  .badge.blue  { background: #0d47a1; color: #64b5f6; }
+
+  /* Risk calculator */
+  .risk-calc { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-group label { font-size: 0.75rem; color: #90a4ae; }
+  .input-group input, .input-group select {
+    background: #0f1923; border: 1px solid #2a3f58;
+    color: #e0e8f0; padding: 7px 10px; border-radius: 6px; font-size: 0.85rem;
+  }
+  .risk-btn {
+    grid-column: 1/-1;
+    background: linear-gradient(135deg, #1565c0, #0d47a1);
+    color: #fff; border: none; padding: 10px; border-radius: 8px;
+    cursor: pointer; font-size: 0.9rem; font-weight: 600;
+    transition: opacity 0.2s;
+  }
+  .risk-btn:hover { opacity: 0.85; }
+  .risk-result { grid-column: 1/-1; text-align: center; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 1rem; display: none; }
+  .risk-result.low    { background: #1b5e20; color: #a5d6a7; }
+  .risk-result.medium { background: #e65100; color: #ffcc80; }
+  .risk-result.high   { background: #b71c1c; color: #ef9a9a; }
+
+  /* Hypothesis table */
+  .hyp-table { font-size: 0.8rem; }
+  .hyp-table td:last-child { font-weight: 600; }
+  .sig { color: #ef5350; }
+  .not-sig { color: #66bb6a; }
+
+  footer { text-align: center; padding: 16px; font-size: 0.75rem; color: #455a64; border-top: 1px solid #1e3048; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏥</div>
+  <div>
+    <h1>Healthcare Analytics &amp; Disease Prediction Dashboard</h1>
+    <p>SY AIML AIDS · Micro Project · Dataset: 10,500 Patient Records</p>
+  </div>
+</header>
+
+<div class="kpi-bar">
+  <div class="kpi">
+    <div class="value">10,500</div>
+    <div class="label">Patient Records</div>
+  </div>
+  <div class="kpi">
+    <div class="value">57.8%</div>
+    <div class="label">Disease Prevalence</div>
+    <div class="delta up">↑ High Risk Population</div>
+  </div>
+  <div class="kpi">
+    <div class="value">34.1%</div>
+    <div class="label">Diabetes Prevalence</div>
+  </div>
+  <div class="kpi">
+    <div class="value">39.3%</div>
+    <div class="label">Heart Disease</div>
+  </div>
+  <div class="kpi">
+    <div class="value">67.5%</div>
+    <div class="label">Best Model Accuracy</div>
+    <div class="delta down">Logistic Regression</div>
+  </div>
+  <div class="kpi">
+    <div class="value">0.724</div>
+    <div class="label">Best ROC-AUC</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- Feature Importance -->
+  <div class="card">
+    <h3>🔬 Top Predictive Features (Logistic Regression)</h3>
+    <div class="bar-chart">
+      <div class="bar-row"><span class="bar-label">Age</span><div class="bar-bg"><div class="bar-fill" style="width:92%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.92</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Physical Activity</span><div class="bar-bg"><div class="bar-fill" style="width:78%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.78</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">BMI</span><div class="bar-bg"><div class="bar-fill" style="width:72%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.72</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Smoking Status</span><div class="bar-bg"><div class="bar-fill" style="width:68%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.68</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">HbA1c</span><div class="bar-bg"><div class="bar-fill" style="width:61%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.61</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Family History Heart</span><div class="bar-bg"><div class="bar-fill" style="width:58%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.58</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Blood Glucose</span><div class="bar-bg"><div class="bar-fill" style="width:52%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.52</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Cholesterol</span><div class="bar-bg"><div class="bar-fill" style="width:45%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.45</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Diet Quality</span><div class="bar-bg"><div class="bar-fill" style="width:40%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.40</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Systolic BP</span><div class="bar-bg"><div class="bar-fill" style="width:35%;background:linear-gradient(90deg,#1565c0,#2196F3)"><span>0.35</span></div></div></div>
+    </div>
+  </div>
+
+  <!-- Disease Donut -->
+  <div class="card">
+    <h3>🧬 Disease Distribution</h3>
+    <div class="donut-wrap">
+      <svg class="donut" width="160" height="160" viewBox="0 0 160 160">
+        <!-- Overall Disease 57.8% -->
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#1e3048" stroke-width="28"/>
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#ef5350" stroke-width="28"
+          stroke-dasharray="218 159" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#66bb6a" stroke-width="28"
+          stroke-dasharray="159 218" stroke-dashoffset="-218" transform="rotate(-90 80 80)"/>
+        <text x="80" y="76" text-anchor="middle" font-size="18" font-weight="700" fill="#64b5f6">57.8%</text>
+        <text x="80" y="94" text-anchor="middle" font-size="9" fill="#90a4ae">DISEASE</text>
+      </svg>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ef5350"></div>Disease Positive (57.8%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#66bb6a"></div>No Disease (42.2%)</div>
+        <br>
+        <div class="legend-item"><div class="legend-dot" style="background:#FF9800"></div>Diabetes (34.1%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9C27B0"></div>Heart Disease (39.3%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00BCD4"></div>Comorbidity (15.6%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Comparison -->
+  <div class="card">
+    <h3>🤖 Model Performance Comparison</h3>
+    <table>
+      <tr><th>Model</th><th>Accuracy</th><th>ROC-AUC</th><th>CV Accuracy</th><th>Status</th></tr>
+      <tr>
+        <td>Logistic Regression</td>
+        <td>67.5%</td><td>0.724</td><td>67.0%</td>
+        <td><span class="badge green">Best</span></td>
+      </tr>
+      <tr>
+        <td>Decision Tree</td>
+        <td>64.5%</td><td>0.675</td><td>64.8%</td>
+        <td><span class="badge blue">Good</span></td>
+      </tr>
+      <tr>
+        <td>Linear Regression</td>
+        <td colspan="2">R²=0.0004, RMSE=27.47</td><td>–</td>
+        <td><span class="badge blue">Baseline</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Statistical Summary -->
+  <div class="card">
+    <h3>📊 Key Statistical Findings</h3>
+    <div class="bar-chart">
+      <div class="bar-row"><span class="bar-label">Mean Age</span><div class="bar-bg"><div class="bar-fill" style="width:60%;background:linear-gradient(90deg,#6a1b9a,#9c27b0)"><span>53.5 yrs</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Mean BMI</span><div class="bar-bg"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,#6a1b9a,#9c27b0)"><span>27.6</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Mean Systolic BP</span><div class="bar-bg"><div class="bar-fill" style="width:60%;background:linear-gradient(90deg,#6a1b9a,#9c27b0)"><span>119.6</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Mean Glucose</span><div class="bar-bg"><div class="bar-fill" style="width:51%;background:linear-gradient(90deg,#6a1b9a,#9c27b0)"><span>101.3</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Mean Cholesterol</span><div class="bar-bg"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,#6a1b9a,#9c27b0)"><span>199.3</span></div></div></div>
+      <div class="bar-row"><span class="bar-label">Mean HbA1c</span><div class="bar-bg"><div class="bar-fill" style="width:43%;background:linear-gradient(90deg,#6a1b9a,#9c27b0)"><span>5.73%</span></div></div></div>
+    </div>
+  </div>
+
+  <!-- Hypothesis Testing -->
+  <div class="card full">
+    <h3>🔬 Hypothesis Testing Results (α = 0.05)</h3>
+    <table class="hyp-table">
+      <tr><th>Feature</th><th>Test</th><th>Statistic</th><th>p-value</th><th>Conclusion</th></tr>
+      <tr><td>Age</td><td>t-test</td><td>t = -30.83</td><td>p &lt; 0.001</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>BMI</td><td>t-test</td><td>t = -9.47</td><td>p &lt; 0.001</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>Blood Glucose</td><td>t-test</td><td>t = -3.93</td><td>p = 0.000087</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>Systolic BP</td><td>t-test</td><td>t = -2.50</td><td>p = 0.012</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>Cholesterol</td><td>t-test</td><td>t = -4.24</td><td>p &lt; 0.001</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>HbA1c</td><td>t-test</td><td>t = -6.40</td><td>p &lt; 0.001</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>LDL</td><td>t-test</td><td>t = 0.29</td><td>p = 0.773</td><td class="not-sig">✓ Fail to Reject H₀</td></tr>
+      <tr><td>Smoking Status</td><td>Chi-Square</td><td>χ² = 195.03</td><td>p &lt; 0.001</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>Physical Activity</td><td>Chi-Square</td><td>χ² = 328.30</td><td>p &lt; 0.001</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>Diet Quality</td><td>Chi-Square</td><td>χ² = 59.68</td><td>p &lt; 0.001</td><td class="sig">✗ REJECT H₀ — Significant</td></tr>
+      <tr><td>Gender</td><td>Chi-Square</td><td>χ² = 0.78</td><td>p = 0.378</td><td class="not-sig">✓ Fail to Reject H₀</td></tr>
+    </table>
+  </div>
+
+  <!-- Risk Calculator -->
+  <div class="card full">
+    <h3>⚡ Interactive Disease Risk Calculator</h3>
+    <div class="risk-calc">
+      <div class="input-group">
+        <label>Age (years)</label>
+        <input type="number" id="r_age" value="45" min="18" max="90">
+      </div>
+      <div class="input-group">
+        <label>BMI</label>
+        <input type="number" id="r_bmi" value="27" min="15" max="55" step="0.1">
+      </div>
+      <div class="input-group">
+        <label>Systolic Blood Pressure</label>
+        <input type="number" id="r_sbp" value="120" min="80" max="200">
+      </div>
+      <div class="input-group">
+        <label>Blood Glucose (mg/dL)</label>
+        <input type="number" id="r_glucose" value="100" min="60" max="400">
+      </div>
+      <div class="input-group">
+        <label>Smoking Status</label>
+        <select id="r_smoke">
+          <option value="0">Never</option>
+          <option value="1">Former</option>
+          <option value="2">Current</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Physical Activity</label>
+        <select id="r_activity">
+          <option value="2">High</option>
+          <option value="1">Moderate</option>
+          <option value="0">Low</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Family History of Heart Disease</label>
+        <select id="r_fheart">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Family History of Diabetes</label>
+        <select id="r_fdiab">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+      <button class="risk-btn" onclick="calcRisk()">Calculate Disease Risk</button>
+      <div class="risk-result" id="risk-output"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Healthcare Analytics &amp; Disease Prediction Model · SY AIML AIDS · School of Engineering and Technology · Dataset: 10,500 Records · Tools: Python, Pandas, Scikit-learn, Matplotlib
+</footer>
+
+<script>
+function calcRisk() {
+  const age      = +document.getElementById('r_age').value;
+  const bmi      = +document.getElementById('r_bmi').value;
+  const sbp      = +document.getElementById('r_sbp').value;
+  const glucose  = +document.getElementById('r_glucose').value;
+  const smoke    = +document.getElementById('r_smoke').value;
+  const activity = +document.getElementById('r_activity').value;
+  const fheart   = +document.getElementById('r_fheart').value;
+  const fdiab    = +document.getElementById('r_fdiab').value;
+
+  // Simplified risk score based on model insights
+  let score = 0;
+  score += (age - 18) / 72 * 30;
+  score += (bmi - 15) / 40 * 20;
+  score += (sbp - 80) / 120 * 10;
+  score += (glucose - 60) / 340 * 10;
+  score += smoke * 8;
+  score -= activity * 8;
+  score += fheart * 12;
+  score += fdiab * 8;
+
+  const pct = Math.min(95, Math.max(5, Math.round(score)));
+  const el = document.getElementById('risk-output');
+  el.style.display = 'block';
+
+  if (pct < 35) {
+    el.className = 'risk-result low';
+    el.textContent = `✅ Estimated Disease Risk: ${pct}% — LOW RISK. Maintain healthy lifestyle.`;
+  } else if (pct < 60) {
+    el.className = 'risk-result medium';
+    el.textContent = `⚠️ Estimated Disease Risk: ${pct}% — MODERATE RISK. Consult your doctor regularly.`;
+  } else {
+    el.className = 'risk-result high';
+    el.textContent = `🚨 Estimated Disease Risk: ${pct}% — HIGH RISK. Seek immediate medical attention.`;
+  }
+}
+</script>
+</body>
+</html>

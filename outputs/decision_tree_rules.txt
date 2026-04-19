@@ -1,0 +1,46 @@
+|--- Age <= 56.50
+|   |--- Physical_Activity_enc <= 0.50
+|   |   |--- Age <= 41.50
+|   |   |   |--- Diet_Quality_enc <= 1.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- Diet_Quality_enc >  1.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |--- Age >  41.50
+|   |   |   |--- Blood_Glucose <= 79.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- Blood_Glucose >  79.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |--- Physical_Activity_enc >  0.50
+|   |   |--- Smoking_Status_enc <= 0.50
+|   |   |   |--- Age <= 43.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- Age >  43.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |--- Smoking_Status_enc >  0.50
+|   |   |   |--- Family_History_Heart <= 0.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- Family_History_Heart >  0.50
+|   |   |   |   |--- truncated branch of depth 3
+|--- Age >  56.50
+|   |--- Physical_Activity_enc <= 0.50
+|   |   |--- Age <= 63.50
+|   |   |   |--- BMI <= 27.55
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- BMI >  27.55
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |--- Age >  63.50
+|   |   |   |--- Age <= 83.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- Age >  83.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |--- Physical_Activity_enc >  0.50
+|   |   |--- Age <= 70.50
+|   |   |   |--- Physical_Activity_enc <= 1.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- Physical_Activity_enc >  1.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |--- Age >  70.50
+|   |   |   |--- Smoking_Status_enc <= 0.50
+|   |   |   |   |--- truncated branch of depth 3
+|   |   |   |--- Smoking_Status_enc >  0.50
+|   |   |   |   |--- truncated branch of depth 3

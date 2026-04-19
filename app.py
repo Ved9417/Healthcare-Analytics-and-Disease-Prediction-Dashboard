@@ -290,7 +290,7 @@ with st.sidebar:
 # ─────────────────────────────────────────────────────────────
 if page == "🏠 Home & KPIs":
     st.markdown("# 🏥 Healthcare Analysis & Disease Prediction")
-    st.markdown("#### End-to-End Data Analytics Pipeline | SY AIML AIDS · School of Engineering and Technology")
+    st.markdown("#### End-to-End Data Analytics Pipeline ")
     st.divider()
 
     # KPI Row

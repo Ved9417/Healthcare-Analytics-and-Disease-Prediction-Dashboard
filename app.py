@@ -976,7 +976,6 @@ elif page == "📋 Raw Data Explorer":
 # ─────────────────────────────────────────────────────────────
 st.divider()
 st.markdown(
-    "<center><small>Healthcare Analytics & Disease Prediction Model · SY AIML AIDS · "
-    "School of Engineering and Technology · Built with Python & Streamlit</small></center>",
+    "<center><small>Healthcare Analytics & Disease Prediction Model · Built with Python & Streamlit</small></center>",
     unsafe_allow_html=True
 )

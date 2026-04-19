@@ -1,7 +1,7 @@
 """
 app.py — Healthcare Analysis & Disease Prediction
 Best-in-class Streamlit deployment for Micro Project
-SY AIML AIDS | School of Engineering and Technology
+# SY AIML AIDS | School of Engineering and Technology
 """
 
 import streamlit as st
